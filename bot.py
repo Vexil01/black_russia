@@ -8,9 +8,9 @@ from aiogram.filters import Command
 logging.basicConfig(level=logging.INFO)
 
 # ===== НАСТРОЙКИ ИЗ ОКРУЖЕНИЯ =====
-BOT_TOKEN = os.getenv("8951284101:AAHC1bZEf9XFTsVJhtHJx2ezQSrxCLfmlmE") #Токен бота
-WEBAPP_URL = os.getenv("https://black-russia-6bxo.onrender.com") #Домен
-ADMIN_ID = int(os.getenv("8392748332")) #UserId
+BOT_TOKEN = os.getenv("TOKEN-BOT") #Токен бота
+WEBAPP_URL = os.getenv("URL-RENDER") #Домен с Render'а
+ADMIN_ID = int(os.getenv("8392748332")) #UserId, твой уже сделал
 
 if not BOT_TOKEN or not WEBAPP_URL or not ADMIN_ID:
     raise ValueError("Не все переменные окружения заданы!")
